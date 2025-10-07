@@ -2,7 +2,36 @@
 venv/
 .venv/
 
+# Environment variables
+.env
+.env.*
+
+# Byte-compiled / cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+
+# Build and packaging
+build/
+dist/
+*.egg-info/
+
+# Coverage and testing
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+.coverage
+coverage.xml
 
 # IDE / Editor settings
 .vscode/
 .idea/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
