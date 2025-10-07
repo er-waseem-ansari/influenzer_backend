@@ -4,4 +4,7 @@ SQLAlchemy
 psycopg2-binary
 python-dotenv
 pydantic_settings
-database
+python-jose[cryptography]
+passlib
+passlib[bcrypt]
+firebase-admin
