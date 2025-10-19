@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum
+from sqlalchemy import Column, Integer, String, DateTime, Enum
 from sqlalchemy.sql import func
 from database import Base
 import enum
@@ -9,6 +9,11 @@ class UserRole(str, enum.Enum):
     BRAND = "brand"
     ADMIN = "admin"
 
+class ProfileStatus(str, enum.Enum):
+    BASIC = "basic"
+    PARTIAL = "partial"
+    COMPLETE = "complete"
+    VERIFIED = "verified"
 
 class User(Base):
     __tablename__ = "users"
@@ -19,7 +24,7 @@ class User(Base):
     phone = Column(String(20), unique=True, index=True, nullable=True)
     password_hash = Column(String(255), nullable=True)  # Null for OAuth users
     role = Column(Enum(UserRole), nullable=False)  # Must specify during signup
-    is_verified = Column(Boolean, default=False)
+    profile_status = Column(Enum(ProfileStatus), default=ProfileStatus.BASIC, nullable=False)
 
     # OAuth
     google_id = Column(String(255), unique=True, nullable=True, index=True)
