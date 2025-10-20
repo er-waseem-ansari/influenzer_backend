@@ -4,7 +4,7 @@ from functools import lru_cache
 class Settings(BaseSettings):
     # App
     APP_NAME: str = "Influenzer"
-    DEBUG: bool = False
+    DEBUG: bool = True
     API_V1_PREFIX: str = "/api/v1"
 
     # Database
@@ -12,13 +12,12 @@ class Settings(BaseSettings):
 
     # JWT
     SECRET_KEY: str  # Generate with: openssl rand -hex 32
-    ALGORITHM: str = "HS256"
+    ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
     # Firebase
     FIREBASE_CREDENTIALS_PATH: str
-    FIREBASE_API_KEY: str
 
     # Google OAuth
     GOOGLE_CLIENT_ID: str
