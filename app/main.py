@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from pydantic_settings import BaseSettings
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.v1 import auth
