@@ -1,6 +1,6 @@
 import firebase_admin
 from firebase_admin import credentials, auth
-from config import get_settings
+from app.config import get_settings
 from fastapi import HTTPException, status
 
 settings = get_settings()

@@ -3,7 +3,7 @@
 from google.auth.transport import requests
 from google.oauth2 import id_token
 from fastapi import HTTPException, status
-from config import get_settings
+from app.config import get_settings
 
 settings = get_settings()
 

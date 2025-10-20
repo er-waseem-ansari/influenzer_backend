@@ -4,12 +4,12 @@ from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from sqlalchemy import select, or_, and_
-from config import get_settings
-from core.firebase import verify_firebase_token
-from core.google_auth import verify_google_token
-from core.security import create_access_token, create_refresh_token, decode_token
-from models.token import RefreshToken
-from models.user import UserRole, User, ProfileStatus
+from app.config import get_settings
+from app.core.firebase import verify_firebase_token
+from app.core.google_auth import verify_google_token
+from app.core.security import create_access_token, create_refresh_token, decode_token
+from app.models.token import RefreshToken
+from app.models.user import UserRole, User, ProfileStatus
 
 settings = get_settings()
 

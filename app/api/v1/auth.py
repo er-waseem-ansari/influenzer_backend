@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
-from schemas.auth import TokenResponse, PhoneOTPRequest, GoogleAuthRequest, TokenRefreshRequest
-from database import get_db
+from app.schemas.auth import TokenResponse, PhoneOTPRequest, GoogleAuthRequest, TokenRefreshRequest
+from app.database import get_db
 from sqlalchemy.orm import Session
 
-from services.auth_service import AuthService
+from app.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 

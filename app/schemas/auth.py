@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
-from models.user import UserRole
+from app.models.user import UserRole
 
 class PhoneOTPRequest(BaseModel):
     id_token: str  # Firebase token

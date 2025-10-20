@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, JSON, ForeignKey, Text, Float
 from sqlalchemy.orm import relationship
-from database import Base
+from app.database import Base
 
 
 class InfluencerProfile(Base):

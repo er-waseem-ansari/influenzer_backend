@@ -2,12 +2,12 @@ from fastapi import FastAPI
 from pydantic_settings import BaseSettings
 from starlette.middleware.cors import CORSMiddleware
 
-from api.v1 import auth
-from config import get_settings
+from app.api.v1 import auth
+from app.config import get_settings
 
 settings = get_settings()
 app = FastAPI(
-    title=settings.app_name,
+    title=settings.APP_NAME,
     debug=settings.DEBUG,
     version="1.0.0"
 )
