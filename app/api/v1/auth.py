@@ -1,4 +1,7 @@
 from fastapi import APIRouter, Depends, Request
+from services.identity.src.oci_cli_identity.generated.identity_cli import user_group
+from sqlalchemy.testing.suite.test_reflection import users
+
 from app.schemas.auth import TokenResponse, VerifyOTPRequest, GoogleAuthRequest, TokenRefreshRequest, GenerateOTPRequest
 from app.database import get_db
 from sqlalchemy.orm import Session
@@ -14,13 +17,13 @@ async def verify_otp(verify_otp_request: VerifyOTPRequest, db: Session = Depends
         db = db,
         phone_number = verify_otp_request.phone_number,
         otp = verify_otp_request.otp,
-        role = verify_otp_request.role,
-        device_id = verify_otp_request.device_id
+        user_role= verify_otp_request.user_role,
+        device_info = verify_otp_request.device_info
     )
 
 @router.post("/phone/generate-otp", status_code=status.HTTP_200_OK)
 async def generate_otp(generate_otp_request: GenerateOTPRequest, request: Request, db: Session = Depends(get_db)):
-    await AuthService.generate_otp(db=db, phone_number=generate_otp_request.phone_number, device_id=generate_otp_request.device_id, request = request)
+    await AuthService.generate_otp(db=db, phone_number=generate_otp_request.phone_number, device_info=generate_otp_request.device_info, request = request)
     return {"detail": "OTP sent successfully"}
 
 
@@ -29,7 +32,7 @@ async def google_auth(request: GoogleAuthRequest, db: Session = Depends(get_db))
     return await AuthService.google_auth(
         db=db,
         id_token_str=request.id_token,
-        role=request.role,
+        user_role=request.user_role,
         device_info=request.device_info
     )
 

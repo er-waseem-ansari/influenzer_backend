@@ -25,4 +25,4 @@ class OTPVerification(Base):
     # Security & Tracking
     ip_address = Column(String(45), nullable=True)  # IPv6 support (45 chars)
     user_agent = Column(String(512), nullable=True)
-    device_id = Column(String(255), nullable=True)  # Flutter device fingerprint
+    device_info = Column(String(255), nullable=True)  # Flutter device fingerprint

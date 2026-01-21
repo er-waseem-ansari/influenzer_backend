@@ -23,7 +23,7 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=True)
     phone = Column(String(20), unique=True, index=True, nullable=True)
     password_hash = Column(String(255), nullable=True)  # Null for OAuth users
-    role = Column(Enum(UserRole), nullable=False)  # Must specify during signup
+    user_role = Column(Enum(UserRole), nullable=False)  # Must specify during signup
     profile_status = Column(Enum(ProfileStatus), default=ProfileStatus.BASIC, nullable=False)
 
     # OAuth

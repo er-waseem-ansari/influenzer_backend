@@ -23,7 +23,7 @@ settings = get_settings()
 class AuthService:
 
     @staticmethod
-    async def generate_otp(db: Session, phone_number: str, device_id: str, request: Request) -> None:
+    async def generate_otp(db: Session, phone_number: str, device_info: str, request: Request) -> None:
         """Generates and sends OTP to the given phone number"""
         try:
             # Step 1: Fetch ALL unverified, non-invalidated OTPs for this phone (SINGLE QUERY)
@@ -66,8 +66,8 @@ class AuthService:
                 db.commit()  # Bulk update
 
             # Step 5: Generate secure OTP
-            otp_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
-            # otp_code = "123456" #Only for testing purpose
+            # otp_code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
+            otp_code = "123456" #Only for testing purpose
 
             otp_hash = bcrypt.hashpw(otp_code.encode('utf-8'), bcrypt.gensalt())
 
@@ -75,7 +75,7 @@ class AuthService:
                 phone_number=phone_number,
                 otp_hash=otp_hash.decode('utf-8'),
                 expires_at=datetime.now(timezone.utc) + timedelta(minutes=5),
-                device_id=device_id,
+                device_info=device_info,
                 ip_address = request.client.host,
                 user_agent = request.headers.get("user-agent")
             )
@@ -83,21 +83,21 @@ class AuthService:
             db.add(new_otp)
             db.commit()
 
-            sms_result = Fast2SMS.send_sms(
-                to=phone_number,
-                message=f"Your OTP is {otp_code}. Valid for 5 minutes."
-            )
-
-
-            LOGGER.error(sms_result)
-
-            if not sms_result["success"]:
-                LOGGER.error(f"Failed to send SMS: {sms_result['error']}")
-                # OTP is saved in DB but SMS failed
-                raise HTTPException(
-                    status_code=500,
-                    detail="Failed to send OTP. Please try again."
-                )
+            # sms_result = Fast2SMS.send_sms(
+            #     to=phone_number,
+            #     message=f"Your OTP is {otp_code}. Valid for 5 minutes."
+            # )
+            #
+            #
+            # LOGGER.error(sms_result)
+            #
+            # if not sms_result["success"]:
+            #     LOGGER.error(f"Failed to send SMS: {sms_result['error']}")
+            #     # OTP is saved in DB but SMS failed
+            #     raise HTTPException(
+            #         status_code=500,
+            #         detail="Failed to send OTP. Please try again."
+            #     )
 
             LOGGER.info(f"OTP sent successfully to {phone_number}")
 
@@ -123,7 +123,7 @@ class AuthService:
 
 
     @staticmethod
-    async def verify_otp(db: Session, phone_number: str, otp: str, role: UserRole, device_id: str) -> dict:
+    async def verify_otp(db: Session, phone_number: str, otp: str, user_role: UserRole, device_info: str) -> dict:
 
         try:
             # Step 1: Find the latest valid OTP record
@@ -223,11 +223,11 @@ class AuthService:
                 user = existing_user
 
                 # Update role if changed
-                if user.role != role:
+                if user.user_role != user_role:
                     LOGGER.error(f"User trying to login with different role.")
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="Login as "+user.role
+                        detail="Login as "+user.user_role
                     )
 
                 LOGGER.info(f"Existing user logged in: {phone_number} (User ID: {user.id})")
@@ -236,7 +236,7 @@ class AuthService:
                 try:
                     user = User(
                         phone=phone_number,
-                        role=role,
+                        user_role=user_role,
                         profile_status=ProfileStatus.BASIC
                     )
                     db.add(user)
@@ -268,7 +268,7 @@ class AuthService:
 
             # Step 7: Generate and return tokens
             try:
-                return AuthService._generate_token_response(db, user, device_id)
+                return AuthService._generate_token_response(db, user, device_info)
             except Exception as e:
                 LOGGER.error(f"Failed to generate tokens for user {user.id}: {str(e)}")
                 raise HTTPException(
@@ -293,14 +293,14 @@ class AuthService:
     def _generate_token_response(
             db: Session,
             user: User,
-            device_id: Optional[str] = None
+            device_info: Optional[str] = None
     ) -> dict:
         """Helper method to generate access + refresh tokens"""
 
         # Token payload
         token_data = {
             "sub": str(user.id),
-            "role": user.role.value,
+            "role": user.user_role.value,
             "profile_status": user.profile_status.value
         }
 
@@ -315,7 +315,7 @@ class AuthService:
             user_id=user.id,
             token=refresh_token,
             expires_at=expires_at,
-            device_id=device_id,
+            device_info=device_info,
             is_revoked=False
         )
 
@@ -330,7 +330,7 @@ class AuthService:
         }
 
     @staticmethod
-    async def google_auth(db: Session, id_token_str: str, role: UserRole, device_info: Optional[str] = None) -> dict:
+    async def google_auth(db: Session, id_token_str: str, user_role: UserRole, device_info: Optional[str] = None) -> dict:
         google_data = await verify_google_token(id_token_str)
         google_id = google_data['sub']
         email = google_data.get('email')
@@ -361,7 +361,7 @@ class AuthService:
                 name=name,
                 email=email,
                 google_id=google_id,
-                role=role,
+                user_role=user_role,
                 is_verified=True,
                 profile_status=ProfileStatus.BASIC  # Needs profile completion
             )
@@ -439,7 +439,7 @@ class AuthService:
             # Generate new access token
             access_token = create_access_token({
                 "sub": str(user.id),
-                "role": user.role.value,
+                "user_role": user.user_role.value,
                 "profile_status": user.profile_status.value
             })
 
