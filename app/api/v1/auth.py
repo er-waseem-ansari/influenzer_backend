@@ -28,12 +28,13 @@ async def generate_otp(generate_otp_request: GenerateOTPRequest, request: Reques
 
 
 @router.post("/google", response_model=TokenResponse)
-async def google_auth(request: GoogleAuthRequest, db: Session = Depends(get_db)):
+async def google_auth(google_auth_request: GoogleAuthRequest, request: Request, db: Session = Depends(get_db)):
     return await AuthService.google_auth(
         db=db,
-        id_token_str=request.id_token,
-        user_role=request.user_role,
-        device_info=request.device_info
+        id_token=google_auth_request.id_token,
+        user_role=google_auth_request.user_role,
+        request=request,
+        device_info=google_auth_request.device_info
     )
 
 @router.post("/refresh", response_model=TokenResponse)

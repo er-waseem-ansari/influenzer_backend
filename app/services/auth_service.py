@@ -332,8 +332,9 @@ class AuthService:
         return response
 
     @staticmethod
-    async def google_auth(db: Session, id_token_str: str, user_role: UserRole, device_info: Optional[str] = None) -> TokenResponse:
-        google_data = await verify_google_token(id_token_str)
+    async def google_auth(db: Session, id_token: str, user_role: UserRole, request: Request, device_info: Optional[str] = None) -> TokenResponse:
+        google_data = await verify_google_token(id_token)
+
         google_id = google_data['sub']
         email = google_data.get('email')
         name = google_data.get('name', 'Google User')
@@ -364,7 +365,6 @@ class AuthService:
                 email=email,
                 google_id=google_id,
                 user_role=user_role,
-                is_verified=True,
                 profile_status=ProfileStatus.BASIC  # Needs profile completion
             )
             try:
