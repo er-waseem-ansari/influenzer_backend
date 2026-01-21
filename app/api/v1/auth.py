@@ -38,4 +38,4 @@ async def google_auth(request: GoogleAuthRequest, db: Session = Depends(get_db))
 
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh_token(request: TokenRefreshRequest, db: Session = Depends(get_db)):
-    return await AuthService.refresh_access_token(db=db, refresh_token_str=request.refresh_token)
+    return await AuthService.refresh_access_token(db=db, refresh_token=request.refresh_token)

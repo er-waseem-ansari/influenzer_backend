@@ -14,7 +14,7 @@ import secrets
 import bcrypt
 import logging
 
-from app.schemas.auth import GenerateOTPRequest
+from app.schemas.auth import GenerateOTPRequest, TokenResponse
 from app.services.fast2sms import Fast2SMS
 
 LOGGER = logging.getLogger(__name__)
@@ -123,7 +123,7 @@ class AuthService:
 
 
     @staticmethod
-    async def verify_otp(db: Session, phone_number: str, otp: str, user_role: UserRole, device_info: str) -> dict:
+    async def verify_otp(db: Session, phone_number: str, otp: str, user_role: UserRole, device_info: str) -> TokenResponse:
 
         try:
             # Step 1: Find the latest valid OTP record
@@ -294,7 +294,7 @@ class AuthService:
             db: Session,
             user: User,
             device_info: Optional[str] = None
-    ) -> dict:
+    ) -> TokenResponse:
         """Helper method to generate access + refresh tokens"""
 
         # Token payload
@@ -313,7 +313,7 @@ class AuthService:
 
         db_refresh_token = RefreshToken(
             user_id=user.id,
-            token=refresh_token,
+            refresh_token=refresh_token,
             expires_at=expires_at,
             device_info=device_info,
             is_revoked=False
@@ -322,15 +322,17 @@ class AuthService:
         db.add(db_refresh_token)
         db.commit()
 
-        return {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "token_type": "bearer",
-            "expires_in": settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
-        }
+        response = TokenResponse(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            token_type="bearer",
+            expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        )
+
+        return response
 
     @staticmethod
-    async def google_auth(db: Session, id_token_str: str, user_role: UserRole, device_info: Optional[str] = None) -> dict:
+    async def google_auth(db: Session, id_token_str: str, user_role: UserRole, device_info: Optional[str] = None) -> TokenResponse:
         google_data = await verify_google_token(id_token_str)
         google_id = google_data['sub']
         email = google_data.get('email')
@@ -382,13 +384,13 @@ class AuthService:
     @staticmethod
     async def refresh_access_token(
             db: Session,
-            refresh_token_str: str
-    ) -> dict:
+            refresh_token: str
+    ) -> TokenResponse:
         """Generate new access token using refresh token"""
 
         try:
             # Decode and verify token
-            payload = decode_token(refresh_token_str)
+            payload = decode_token(refresh_token)
 
             # Check token type
             if payload.get('type') != 'refresh':
@@ -402,7 +404,7 @@ class AuthService:
             # Check if token exists in DB and not revoked
             stmt = select(RefreshToken).where(
                 and_(
-                    RefreshToken.token == refresh_token_str,
+                    RefreshToken.refresh_token == refresh_token,
                     RefreshToken.user_id == user_id,
                     RefreshToken.is_revoked == False
                 )
@@ -443,12 +445,14 @@ class AuthService:
                 "profile_status": user.profile_status.value
             })
 
-            return {
-                "access_token": access_token,
-                "refresh_token": refresh_token_str,
-                "token_type": "bearer",
-                "expires_in": settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
-            }
+            response = TokenResponse(
+                access_token=access_token,
+                refresh_token=refresh_token,
+                token_type="bearer",
+                expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+            )
+
+            return response
 
         except HTTPException:
             raise
