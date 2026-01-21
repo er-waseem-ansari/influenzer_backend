@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str
 
+    #Phone otp
+    OTP_MAX_ATTEMPTS: int = 3
+
     # JWT
     SECRET_KEY: str  # Generate with: openssl rand -hex 32
     ALGORITHM: str
@@ -22,6 +25,10 @@ class Settings(BaseSettings):
     # Google OAuth
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
+
+    # Fast2SMS
+    FAST2SMS_API_KEY: str
+    FAST2SMS_URL: str = "https://www.fast2sms.com/dev/bulkV2"  # Default value
 
     # CORS
     ALLOWED_ORIGINS: list[str] = ["*"]

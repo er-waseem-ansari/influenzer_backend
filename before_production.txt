@@ -1,0 +1,9 @@
+WHAT NEEDS TO BE DONE BEFORE PRODUCTION :
+
+ADD ALLOWED ORIGINS IN CORS SETTINGS ( IMPORTANT )
+- Go to Settings > Network > CORS Settings
+- Add your production domain to the list of allowed origins
+- Save the changes
+
+
+
