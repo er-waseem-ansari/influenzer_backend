@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Enum
+from sqlalchemy import Column, Integer, String, DateTime, Enum, Boolean
 from sqlalchemy.sql import func
 from app.database import Base
 import enum
@@ -29,6 +29,11 @@ class User(Base):
     # OAuth
     google_id = Column(String(255), unique=True, nullable=True, index=True)
     firebase_uid = Column(String(255), unique=True, nullable=True, index=True)
+
+    # New additions
+    is_active = Column(Boolean, default=True)  # For account suspension
+    is_verified = Column(Boolean, default=False)  # Verification badge
+    last_login = Column(DateTime(timezone=True), nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
