@@ -122,34 +122,34 @@ class InfluencerPortfolio(Base):
     # Relationship
     influencer = relationship("User", backref="portfolio_videos")
 
-    class InfluencerAnalytics(Base):
-        __tablename__ = "influencer_analytics"
+class InfluencerAnalytics(Base):
+    __tablename__ = "influencer_analytics"
 
-        id = Column(Integer, primary_key=True, index=True)
-        influencer_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    influencer_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
-        # Snapshot date
-        snapshot_date = Column(Date, nullable=False, index=True)
+    # Snapshot date
+    snapshot_date = Column(Date, nullable=False, index=True)
 
-        # Platform-wise snapshots
-        instagram_followers = Column(Integer, nullable=True)
-        instagram_engagement_rate = Column(Float, nullable=True)
-        instagram_avg_reach = Column(Integer, nullable=True)
+    # Platform-wise snapshots
+    instagram_followers = Column(Integer, nullable=True)
+    instagram_engagement_rate = Column(Float, nullable=True)
+    instagram_avg_reach = Column(Integer, nullable=True)
 
-        youtube_subscribers = Column(Integer, nullable=True)
-        youtube_avg_views = Column(Integer, nullable=True)
-        youtube_watch_time_hours = Column(Float, nullable=True)
+    youtube_subscribers = Column(Integer, nullable=True)
+    youtube_avg_views = Column(Integer, nullable=True)
+    youtube_watch_time_hours = Column(Float, nullable=True)
 
-        # Aggregate metrics
-        total_reach = Column(Integer, nullable=True)
-        overall_engagement_rate = Column(Float, nullable=True)
+    # Aggregate metrics
+    total_reach = Column(Integer, nullable=True)
+    overall_engagement_rate = Column(Float, nullable=True)
 
-        created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-        # Composite unique constraint (one snapshot per influencer per day)
-        __table_args__ = (
-            UniqueConstraint('influencer_id', 'snapshot_date', name='unique_daily_snapshot'),
-        )
+    # Composite unique constraint (one snapshot per influencer per day)
+    __table_args__ = (
+        UniqueConstraint('influencer_id', 'snapshot_date', name='unique_daily_snapshot'),
+    )
 
-        # Relationship
-        influencer = relationship("User", backref="analytics_history")
+    # Relationship
+    influencer = relationship("User", backref="analytics_history")
