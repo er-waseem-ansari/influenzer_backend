@@ -1,8 +1,11 @@
+import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from app.api.v1 import auth
+from app.api.v1.brand import brand_auth, profile
+from app.api.v1.influencer import auth
 from app.config import get_settings
+from app.core.exception_handlers import register_exception_handlers
 
 settings = get_settings()
 app = FastAPI(
@@ -20,8 +23,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Global exception handlers (RFC 9457 Problem Details)
+register_exception_handlers(app)
+
 # Include routers
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
+app.include_router(brand_auth.signup_router, prefix=settings.API_V1_PREFIX)
+app.include_router(brand_auth.login_router, prefix=settings.API_V1_PREFIX)
+app.include_router(brand_auth.verify_router, prefix=settings.API_V1_PREFIX)
+app.include_router(brand_auth.resend_router, prefix=settings.API_V1_PREFIX)
+app.include_router(profile.read_router, prefix=settings.API_V1_PREFIX)
+app.include_router(profile.write_router, prefix=settings.API_V1_PREFIX)
 
 # Health check endpoint
 @app.get("/")
@@ -32,6 +44,5 @@ async def root():
         "version": "1.0.0"
     }
 
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy"}
+if __name__ == "__main__":
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional
+from uuid import UUID
 from app.models.user import UserRole
 
 class GenerateOTPRequest(BaseModel):
@@ -29,5 +30,5 @@ class TokenResponse(BaseModel):
 class LoginResponse(BaseModel):
     token_details: TokenResponse
     is_new_user: bool = Field(..., alias='isNewUser')
-    user_id: int = Field(..., alias='userId')
+    user_id: UUID = Field(..., alias='userId')
     user_role: UserRole = Field(..., alias='userRole')

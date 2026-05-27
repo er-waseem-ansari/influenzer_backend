@@ -1,24 +1,24 @@
-from sqlalchemy import Column, Integer, String, DateTime, Enum, Boolean
+from sqlalchemy import Column, String, DateTime, Enum, Boolean
 from sqlalchemy.sql import func
-from app.database import Base
+from app.database import Base, uuid_pk
 import enum
 
 
 class UserRole(str, enum.Enum):
-    INFLUENCER = "influencer"
-    BRAND = "brand"
-    ADMIN = "admin"
+    INFLUENCER = "INFLUENCER"
+    BRAND = "BRAND"
+    ADMIN = "ADMIN"
 
 class ProfileStatus(str, enum.Enum):
-    BASIC = "basic"
-    PARTIAL = "partial"
-    COMPLETE = "complete"
-    VERIFIED = "verified"
+    BASIC = "BASIC"
+    PARTIAL = "PARTIAL"
+    COMPLETE = "COMPLETE"
+    VERIFIED = "VERIFIED"
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = uuid_pk()
     name = Column(String(255), nullable=True)
     email = Column(String(255), unique=True, index=True, nullable=True)
     phone = Column(String(20), unique=True, index=True, nullable=True)

@@ -1,4 +1,4 @@
-from app.database import Base
+from app.database import Base, uuid_pk
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.sql import func
 
@@ -6,7 +6,7 @@ class OTPVerification(Base):
     __tablename__ = "otp_verifications"
 
     # Primary Key
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id = uuid_pk()
 
     # Core OTP Fields
     phone_number = Column(String(15), nullable=False, index=True)  # E.164 format: +919876543210

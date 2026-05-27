@@ -1,6 +1,4 @@
 from fastapi import APIRouter, Depends, Request
-from services.identity.src.oci_cli_identity.generated.identity_cli import user_group
-from sqlalchemy.testing.suite.test_reflection import users
 
 from app.schemas.auth import TokenResponse, VerifyOTPRequest, GoogleAuthRequest, TokenRefreshRequest, GenerateOTPRequest
 from app.database import get_db

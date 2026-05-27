@@ -4,8 +4,12 @@ SQLAlchemy
 psycopg2-binary
 python-dotenv
 pydantic_settings
+pydantic[email]
 python-jose[cryptography]
+cryptography
 passlib
 passlib[bcrypt]
 firebase-admin
 requests
+redis
+resend

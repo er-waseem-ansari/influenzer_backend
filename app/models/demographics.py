@@ -1,14 +1,14 @@
-from sqlalchemy import Column, Integer, Float, DateTime, ForeignKey, Enum, JSON
+from sqlalchemy import Column, Float, DateTime, Enum, JSON
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from app.database import Base
+from app.database import Base, uuid_pk, uuid_fk
 
 class AudienceDemographics(Base):
     __tablename__ = "audience_demographics"
 
-    id = Column(Integer, primary_key=True, index=True)
-    influencer_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    platform = Column(Enum('instagram', 'youtube', 'tiktok'), nullable=False)
+    id = uuid_pk()
+    influencer_id = uuid_fk("users.id", nullable=False, ondelete="CASCADE")
+    platform = Column(Enum('instagram', 'youtube', 'tiktok', name='demographics_platform'), nullable=False)
 
     # Age distribution (percentages)
     age_0_12 = Column(Float, default=0)

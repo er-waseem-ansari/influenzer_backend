@@ -1,14 +1,14 @@
-from sqlalchemy import Column, Integer, String, JSON, ForeignKey, Text, Float, DateTime, Boolean, Enum, Numeric, Date, \
+from sqlalchemy import Column, Integer, String, JSON, Text, Float, DateTime, Boolean, Enum, Numeric, Date, \
     UniqueConstraint
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from app.database import Base
+from app.database import Base, uuid_pk, uuid_fk
 
 
 class InfluencerProfile(Base):
     __tablename__ = "influencer_profiles"
 
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    user_id = uuid_fk("users.id", primary_key=True, ondelete="CASCADE")
 
     # Basic Info (what you have)
     bio = Column(Text, nullable=True)
@@ -60,7 +60,7 @@ class InfluencerProfile(Base):
     custom_pricing_note = Column(Text, nullable=True)  # "Negotiable for long-term"
 
     # Availability
-    availability_status = Column(Enum('available', 'busy', 'booked'), default='available')
+    availability_status = Column(Enum('available', 'busy', 'booked', name='influencer_availability_status'), default='available')
     next_available_date = Column(Date, nullable=True)
 
     # Performance Stats (for dashboard & profile)
@@ -92,13 +92,13 @@ class InfluencerProfile(Base):
 class InfluencerPortfolio(Base):
     __tablename__ = "influencer_portfolios"
 
-    id = Column(Integer, primary_key=True, index=True)
-    influencer_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    id = uuid_pk()
+    influencer_id = uuid_fk("users.id", nullable=False, ondelete="CASCADE")
 
     # Video details
     video_url = Column(String(500), nullable=False)  # S3/cloud storage URL
     thumbnail_url = Column(String(500), nullable=True)
-    video_type = Column(Enum('intro', 'sample_work', 'behind_scenes'), nullable=False)
+    video_type = Column(Enum('intro', 'sample_work', 'behind_scenes', name='portfolio_video_type'), nullable=False)
 
     title = Column(String(255), nullable=True)
     description = Column(Text, nullable=True)
@@ -125,8 +125,8 @@ class InfluencerPortfolio(Base):
 class InfluencerAnalytics(Base):
     __tablename__ = "influencer_analytics"
 
-    id = Column(Integer, primary_key=True, index=True)
-    influencer_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    id = uuid_pk()
+    influencer_id = uuid_fk("users.id", nullable=False, ondelete="CASCADE")
 
     # Snapshot date
     snapshot_date = Column(Date, nullable=False, index=True)

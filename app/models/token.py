@@ -1,13 +1,13 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
+from sqlalchemy import Column, String, DateTime, Boolean
 from sqlalchemy.sql import func
-from app.database import Base
+from app.database import Base, uuid_pk, uuid_fk
 
 
 class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
 
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    id = uuid_pk()
+    user_id = uuid_fk("users.id", nullable=False, ondelete="CASCADE")
     refresh_token = Column(String(500), unique=True, index=True, nullable=False)
     expires_at = Column(DateTime(timezone=True), nullable=False)
     is_revoked = Column(Boolean, default=False, nullable=False)
