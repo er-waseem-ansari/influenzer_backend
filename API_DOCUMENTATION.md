@@ -4,7 +4,7 @@ Reference for integrating the **brand** side of the Influenzer backend with the 
 
 - **Base URL:** `{BACKEND_URL}/api/v1` (local default: `http://localhost:8000/api/v1`)
 - **Content type:** `application/json` for all request/response bodies.
-- **Auth:** Bearer JWT in the `Authorization` header for the `/brand/me/*` endpoints (see [Authentication](#authentication)).
+- **Auth:** Bearer JWT in the `Authorization` header for `/brand/signout` and the `/brand/me/*` endpoints (see [Authentication](#authentication)).
 - **Timestamps:** ISO‑8601 UTC strings (e.g. `2026-05-27T10:15:00Z`).
 - **IDs:** UUID strings.
 
@@ -32,6 +32,7 @@ The camelCase endpoints also accept snake_case on input (lenient), but always **
    - [POST /brand/signup](#post-brandsignup)
    - [POST /brand/login](#post-brandlogin)
    - [POST /auth/refresh](#post-authrefresh)
+   - [POST /brand/signout](#post-brandsignout)
    - [POST /brand/resend-verification](#post-brandresend-verification)
    - [GET /brand/verify-email](#get-brandverify-email)
 6. [Brand profile endpoints](#brand-profile-endpoints)
@@ -274,6 +275,60 @@ Exchange a valid refresh token for a fresh access token. **Shared** across the i
 ```
 
 **Errors:** `401 UNAUTHORIZED` (invalid / revoked / expired refresh token), `404 NOT_FOUND` (user gone).
+
+---
+
+### POST /brand/signout
+
+Revoke a refresh token so it can no longer be exchanged for a new access token. Use this when the user clicks **"Log out"** in your app, or **"Log out of all devices"** in security settings.
+
+**Auth:** required — `Authorization: Bearer <access_token>` for a `BRAND` account.
+
+**Request body**
+
+| Field | Type | Required | Notes |
+|-------|------|:--:|-------|
+| `refreshToken` | string | conditional | The refresh token to revoke. **Required unless `allDevices` is `true`.** |
+| `allDevices` | boolean | ❌ | Default `false`. When `true`, revokes **every** active refresh token for the caller and `refreshToken` is ignored. |
+
+Sign out from this device only:
+
+```json
+{ "refreshToken": "eyJhbGciOiJI..." }
+```
+
+Sign out from every device:
+
+```json
+{ "allDevices": true }
+```
+
+**Response `200 OK`**
+
+```json
+{ "message": "Signed out." }
+```
+
+(or `"Signed out from all devices."` when `allDevices` was `true`.)
+
+**Behaviour notes — read before integrating**
+
+- **Server-side only.** This revokes the *refresh* token in the database. The current short-lived access token (≤ 30 min) remains valid until it naturally expires — the frontend MUST also drop the access token from its own storage (localStorage / cookies / memory) at the same time.
+- **Idempotent.** Re-sending the same request, or sending an unknown / already-revoked / expired token that belongs to the caller, still returns `200`. Treat any `2xx` as "you are signed out" — don't show a "session not found" error if the user double-clicks Logout.
+- **Caller-scoped.** Only refresh tokens belonging to the authenticated user can be revoked; passing a token that belongs to a different account is silently ignored (still returns `200`). A stolen access token therefore cannot be used to log out other users.
+- **Recommended client flow:**
+  1. `POST /brand/signout` with the stored `refreshToken`.
+  2. On any `2xx` response (or even on network failure — see below), clear the access token + refresh token from local storage and redirect to the login screen.
+  3. If the call fails with a network/5xx error, still wipe local tokens client-side — the user expects "Log out" to immediately log them out of the UI.
+
+**Errors**
+
+| HTTP | `code` | When |
+|------|--------|------|
+| 400 | `BAD_REQUEST` | `allDevices` is `false` (or omitted) **and** `refreshToken` was not provided. |
+| 401 | `UNAUTHORIZED` | Missing / invalid / expired access token, or inactive account. |
+| 403 | `FORBIDDEN` | Access token belongs to a non-`BRAND` account. |
+| 422 | `VALIDATION_ERROR` | Body is malformed (e.g. `refreshToken` sent as empty string). |
 
 ---
 

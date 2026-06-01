@@ -32,6 +32,7 @@ app.include_router(brand_auth.signup_router, prefix=settings.API_V1_PREFIX)
 app.include_router(brand_auth.login_router, prefix=settings.API_V1_PREFIX)
 app.include_router(brand_auth.verify_router, prefix=settings.API_V1_PREFIX)
 app.include_router(brand_auth.resend_router, prefix=settings.API_V1_PREFIX)
+app.include_router(brand_auth.signout_router, prefix=settings.API_V1_PREFIX)
 app.include_router(profile.read_router, prefix=settings.API_V1_PREFIX)
 app.include_router(profile.write_router, prefix=settings.API_V1_PREFIX)
 

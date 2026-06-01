@@ -27,6 +27,7 @@ from app.core.security import (
 from app.models.brand import BrandProfile
 from app.models.brand_members import BrandMember, BrandMemberRole
 from app.models.email_verification import EmailVerificationToken
+from app.models.token import RefreshToken
 from app.models.user import ProfileStatus, User, UserRole
 from app.schemas.auth import TokenResponse
 from app.schemas.brand import MessageResponse
@@ -131,6 +132,64 @@ class BrandService:
         )
         # _generate_token_response commits, persisting last_login in the same txn.
         return AuthService._generate_token_response(db, user, device_info)
+
+    @staticmethod
+    def signout_brand(
+        db: Session,
+        *,
+        user: User,
+        refresh_token: str | None,
+        all_devices: bool,
+    ) -> MessageResponse:
+        """Revoke refresh tokens for an authenticated brand user.
+
+        When `all_devices` is true, every active refresh token owned by the
+        caller is revoked (sign out everywhere). Otherwise `refresh_token` is
+        required and only that single session is revoked. The token must
+        belong to the caller — refusing other-user tokens prevents a stolen
+        access token from being used to revoke an unrelated session.
+
+        Already-revoked, unknown, or expired tokens succeed silently so a
+        retried signout is idempotent and does not leak which tokens exist.
+        """
+        if all_devices:
+            revoked = (
+                db.query(RefreshToken)
+                .filter(
+                    RefreshToken.user_id == user.id,
+                    RefreshToken.is_revoked.is_(False),
+                )
+                .update(
+                    {RefreshToken.is_revoked: True},
+                    synchronize_session=False,
+                )
+            )
+            db.commit()
+            LOGGER.info(
+                "Brand user signed out from all devices: user_id=%s revoked=%s",
+                user.id, revoked,
+            )
+            return MessageResponse(message="Signed out from all devices.")
+
+        if not refresh_token:
+            raise BadRequestException(
+                "refresh_token is required unless all_devices is true."
+            )
+
+        token_row = (
+            db.query(RefreshToken)
+            .filter(
+                RefreshToken.refresh_token == refresh_token,
+                RefreshToken.user_id == user.id,
+            )
+            .first()
+        )
+        if token_row is not None and not token_row.is_revoked:
+            token_row.is_revoked = True
+            db.commit()
+            LOGGER.info("Brand user signed out: user_id=%s", user.id)
+
+        return MessageResponse(message="Signed out.")
 
     @staticmethod
     def signup_brand_admin(

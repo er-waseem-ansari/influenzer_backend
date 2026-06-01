@@ -15,12 +15,15 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
+from app.core.dependencies import require_brand_user
 from app.core.exceptions import BadRequestException, NotFoundException
 from app.core.rate_limit import enforce_rate_limit, rate_limit_by_ip
 from app.database import get_db
+from app.models.user import User
 from app.schemas.auth import TokenResponse
 from app.schemas.brand import (
     BrandLoginRequest,
+    BrandSignoutRequest,
     BrandSignupRequest,
     MessageResponse,
     ResendVerificationRequest,
@@ -96,6 +99,8 @@ verify_router = APIRouter(
     ],
 )
 
+signout_router = APIRouter(prefix="/brand", tags=["Brand"])
+
 resend_router = APIRouter(
     prefix="/brand",
     tags=["Brand"],
@@ -157,6 +162,24 @@ async def verify_email(token: str, db: Session = Depends(get_db)):
     return RedirectResponse(
         url=_frontend_url(settings.EMAIL_VERIFIED_PATH),
         status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+
+@signout_router.post(
+    "/signout", response_model=MessageResponse, status_code=status.HTTP_200_OK
+)
+async def brand_signout(
+    payload: BrandSignoutRequest,
+    user: User = Depends(require_brand_user),
+    db: Session = Depends(get_db),
+):
+    """Revoke the caller's refresh token. Pass `allDevices: true` to revoke
+    every active session for the account."""
+    return BrandService.signout_brand(
+        db,
+        user=user,
+        refresh_token=payload.refresh_token,
+        all_devices=payload.all_devices,
     )
 
 

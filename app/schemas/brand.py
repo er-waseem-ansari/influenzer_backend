@@ -43,3 +43,13 @@ class MessageResponse(BaseModel):
 
 class ResendVerificationRequest(BaseModel):
     email: EmailStr = Field(...)
+
+
+class BrandSignoutRequest(BaseModel):
+    """Sign out a brand session. `refresh_token` is the token issued at login
+    that should be revoked. Set `all_devices` to revoke every active refresh
+    token for the caller instead of just this one."""
+    model_config = ConfigDict(populate_by_name=True, str_strip_whitespace=True)
+
+    refresh_token: str | None = Field(default=None, alias="refreshToken", min_length=1)
+    all_devices: bool = Field(default=False, alias="allDevices")
