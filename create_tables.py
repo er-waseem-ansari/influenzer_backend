@@ -22,6 +22,10 @@ from app.models.influencer import (  # noqa: F401
     InfluencerAnalytics,
 )
 from app.models.demographics import AudienceDemographics  # noqa: F401
+from app.models.campaign import Campaign  # noqa: F401
+from app.models.integration import PostbackIntegration  # noqa: F401
+from app.models.attribution_source import Click, CouponAssignment  # noqa: F401
+from app.models.postback import Conversion, RawPostbackEvent  # noqa: F401
 
 # Create all tables
 Base.metadata.create_all(bind=engine)

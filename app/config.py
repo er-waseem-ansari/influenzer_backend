@@ -58,6 +58,23 @@ class Settings(BaseSettings):
     RESEND_VERIFICATION_COOLDOWN_SECONDS: int = 60  # min gap between resends per email
     BRAND_PROFILE_WRITE_RATE_LIMIT_MAX: int = 60          # max profile/social/billing writes
     BRAND_PROFILE_WRITE_RATE_LIMIT_WINDOW_SECONDS: int = 60  # per user / minute
+    CAMPAIGN_WRITE_RATE_LIMIT_MAX: int = 30               # max campaign create/draft writes
+    CAMPAIGN_WRITE_RATE_LIMIT_WINDOW_SECONDS: int = 60    # per user / minute
+
+    # --- Conversion postback (server-to-server, HMAC-signed) ---
+    # Clock-skew tolerance for X-Inflz-Timestamp. A signed request whose timestamp
+    # is older/newer than this is rejected (bounds the replay window).
+    POSTBACK_TIMESTAMP_TOLERANCE_SECONDS: int = 300       # ±5 minutes
+    # Redis-backed nonce store giving full replay immunity inside the timestamp
+    # window. Degrades gracefully (fail-open on the nonce check only) if Redis is
+    # down, so a Redis outage never blocks legitimate conversions.
+    POSTBACK_REPLAY_PROTECTION_ENABLED: bool = True
+    # Per-integration flood protection (reuses the Redis sliding-window limiter).
+    POSTBACK_RATE_LIMIT_MAX: int = 600                    # max events
+    POSTBACK_RATE_LIMIT_WINDOW_SECONDS: int = 60          # per integration / minute
+    # Fallback click-attribution window when a campaign has no affiliate cookie
+    # window configured (awareness/flat campaigns still track clicks).
+    POSTBACK_DEFAULT_COOKIE_WINDOW_DAYS: int = 30
 
     # Firebase
     FIREBASE_CREDENTIALS_PATH: str

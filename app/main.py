@@ -2,7 +2,8 @@ import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from app.api.v1.brand import brand_auth, profile
+from app.api.v1 import collect
+from app.api.v1.brand import brand_auth, campaigns, integrations, profile
 from app.api.v1.influencer import auth
 from app.config import get_settings
 from app.core.exception_handlers import register_exception_handlers
@@ -35,6 +36,12 @@ app.include_router(brand_auth.resend_router, prefix=settings.API_V1_PREFIX)
 app.include_router(brand_auth.signout_router, prefix=settings.API_V1_PREFIX)
 app.include_router(profile.read_router, prefix=settings.API_V1_PREFIX)
 app.include_router(profile.write_router, prefix=settings.API_V1_PREFIX)
+app.include_router(campaigns.read_router, prefix=settings.API_V1_PREFIX)
+app.include_router(campaigns.write_router, prefix=settings.API_V1_PREFIX)
+app.include_router(integrations.read_router, prefix=settings.API_V1_PREFIX)
+app.include_router(integrations.write_router, prefix=settings.API_V1_PREFIX)
+# Public postback receiver: own path (no /api/v1 prefix), HMAC-authenticated.
+app.include_router(collect.router)
 
 # Health check endpoint
 @app.get("/")
